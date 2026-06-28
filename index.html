@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天吃啥 🍽️</title>
+<style>
+  :root {
+    --bg: #FFF8F0;
+    --card: #FFFFFF;
+    --primary: #FF6B35;
+    --secondary: #F7C59F;
+    --accent: #2E86AB;
+    --text: #1A1A2E;
+    --success: #4CAF50;
+    --border: #E8D5C4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 100px;
+  }
+  h1 {
+    font-size: 28px;
+    text-align: center;
+    padding: 20px 0 8px;
+    color: var(--primary);
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .section { margin-bottom: 20px; }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+  .add-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+  }
+  .add-row input:focus { border-color: var(--primary); }
+  .btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #e05a2a; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #237090; }
+  .btn-outline { background: transparent; border: 2px solid var(--border); }
+  .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
+  .btn-danger { color: #e74c3c; border-color: #e74c3c; }
+  .btn-success { background: var(--success); color: #fff; }
+  .dish-list { display: flex; flex-direction: column; gap: 6px; }
+  .dish-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--card);
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    gap: 8px;
+  }
+  .dish-name { font-size: 16px; font-weight: 500; flex: 1; }
+  .dish-actions { display: flex; gap: 4px; align-items: center; }
+  .empty-state {
+    text-align: center;
+    color: #aaa;
+    padding: 24px;
+    font-size: 14px;
+  }
+  /* Member cards */
+  .member-grid { display: flex; flex-direction: column; gap: 10px; }
+  .member-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .member-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .member-name { font-weight: 600; font-size: 16px; }
+  .member-emoji { font-size: 20px; margin-right: 6px; }
+  .member-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    background: var(--card);
+    transition: all 0.12s;
+    user-select: none;
+  }
+  .tag.selected {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .tag.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .member-del { cursor: pointer; color: #ccc; font-size: 18px; }
+  .member-del:hover { color: #e74c3c; }
+
+  /* Result section */
+  .result-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0;
+  }
+  .result-name { width: 100px; font-size: 14px; text-align: right; flex-shrink: 0; }
+  .result-track {
+    flex: 1;
+    height: 24px;
+    background: #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .result-fill {
+    height: 100%;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--primary), #FF8C42);
+    transition: width 0.3s;
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .result-count { font-size: 14px; width: 30px; text-align: left; flex-shrink: 0; }
+
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .bottom-bar .btn { flex: 1; max-width: 200px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-content {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .modal-content h3 { margin-bottom: 16px; font-size: 18px; }
+  .modal-content input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .modal-content input:focus { border-color: var(--primary); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>🍽️ 今天吃啥</h1>
+<p class="subtitle">每人点自己喜欢的菜，投票决定晚饭</p>
+
+<div class="section">
+  <div class="section-title">📋 今日菜单</div>
+  <div class="add-row">
+    <input type="text" id="dishInput" placeholder="输入菜名，如 红烧排骨" maxlength="20">
+    <button class="btn btn-primary" onclick="addDish()">➕ 添加</button>
+  </div>
+  <div class="dish-list" id="dishList" style="margin-top:10px"></div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    👨‍👩‍👧‍👦 家人点菜
+    <button class="btn btn-sm btn-outline" onclick="showAddMember()">➕ 家人</button>
+  </div>
+  <div class="member-grid" id="memberGrid"></div>
+</div>
+
+<div class="section" id="resultSection">
+  <div class="section-title">📊 统计</div>
+  <div id="resultContent"></div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn btn-outline btn-danger" onclick="resetAll()">🔄 重置</button>
+  <button class="btn btn-success" onclick="randomPick()">🎲 随机定菜</button>
+</div>
+
+<div class="modal-overlay hidden" id="memberModal">
+  <div class="modal-content">
+    <h3>添加家人</h3>
+    <input type="text" id="memberNameInput" placeholder="姓名" maxlength="10">
+    <input type="text" id="memberEmojiInput" placeholder="表情（如 👨）" maxlength="2">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="hideModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddMember()">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ======== State ========
+let state = {
+  dishes: [],
+  members: [],
+  picks: {}   // memberId -> dish id set
+};
+
+const DEFAULT_DISHES = ['红烧排骨', '清蒸鲈鱼', '番茄炒蛋', '蒜蓉西兰花', '可乐鸡翅', '酸辣土豆丝'];
+const DEFAULT_MEMBERS = [
+  { id: 'm1', name: '堂成', emoji: '👨' },
+  { id: 'm2', name: '莉莉', emoji: '👩' },
+  { id: 'm3', name: '开心', emoji: '👦' },
+  { id: 'm4', name: '开朗', emoji: '👶' },
+];
+
+// ======== Init ========
+function init() {
+  const saved = localStorage.getItem('foodselect');
+  if (saved) {
+    try { state = JSON.parse(saved); } catch(e) { resetToDefault(); }
+  } else {
+    resetToDefault();
+  }
+  render();
+}
+
+function resetToDefault() {
+  state = {
+    dishes: DEFAULT_DISHES.map((d, i) => ({ id: 'd' + i, name: d })),
+    members: DEFAULT_MEMBERS,
+    picks: {},
+  };
+  // Init picks for all members
+  state.members.forEach(m => {
+    if (!state.picks[m.id]) state.picks[m.id] = [];
+  });
+  save();
+}
+
+function save() {
+  localStorage.setItem('foodselect', JSON.stringify(state));
+}
+
+// ======== Dish Management ========
+function addDish() {
+  const input = document.getElementById('dishInput');
+  const name = input.value.trim();
+  if (!name) { showToast('请输入菜名'); return; }
+  const id = 'd' + Date.now();
+  state.dishes.push({ id, name });
+  input.value = '';
+  save(); render();
+}
+
+function removeDish(id) {
+  state.dishes = state.dishes.filter(d => d.id !== id);
+  // Remove from picks
+  Object.keys(state.picks).forEach(mid => {
+    state.picks[mid] = state.picks[mid].filter(did => did !== id);
+  });
+  save(); render();
+}
+
+// ======== Member Management ========
+function showAddMember() {
+  document.getElementById('memberModal').classList.remove('hidden');
+  document.getElementById('memberNameInput').value = '';
+  document.getElementById('memberEmojiInput').value = '';
+  document.getElementById('memberNameInput').focus();
+}
+
+function hideModal() {
+  document.getElementById('memberModal').classList.add('hidden');
+}
+
+function confirmAddMember() {
+  const name = document.getElementById('memberNameInput').value.trim();
+  const emoji = document.getElementById('memberEmojiInput').value.trim() || '👤';
+  if (!name) { showToast('请输入姓名'); return; }
+  const id = 'm' + Date.now();
+  state.members.push({ id, name, emoji });
+  state.picks[id] = [];
+  hideModal();
+  save(); render();
+}
+
+function removeMember(id) {
+  state.members = state.members.filter(m => m.id !== id);
+  delete state.picks[id];
+  save(); render();
+}
+
+// ======== Voting ========
+function togglePick(memberId, dishId) {
+  if (!state.picks[memberId]) state.picks[memberId] = [];
+  const picks = state.picks[memberId];
+  const idx = picks.indexOf(dishId);
+  if (idx >= 0) picks.splice(idx, 1);
+  else picks.push(dishId);
+  save(); render();
+}
+
+// ======== Render ========
+function render() {
+  renderDishes();
+  renderMembers();
+  renderResults();
+}
+
+function renderDishes() {
+  const el = document.getElementById('dishList');
+  if (state.dishes.length === 0) {
+    el.innerHTML = '<div class="empty-state">🍳 还没加菜，先添加几道菜吧</div>';
+    return;
+  }
+  el.innerHTML = state.dishes.map(d => `
+    <div class="dish-item">
+      <span class="dish-name">${d.name}</span>
+      <div class="dish-actions">
+        <button class="btn btn-sm btn-outline btn-danger" onclick="removeDish('${d.id}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMembers() {
+  const el = document.getElementById('memberGrid');
+  if (state.members.length === 0) {
+    el.innerHTML = '<div class="empty-state">👥 还没添加家人，点上方"家人"添加</div>';
+    return;
+  }
+  el.innerHTML = state.members.map(m => {
+    const memberPicks = state.picks[m.id] || [];
+    const tags = state.dishes.map(d => {
+      const sel = memberPicks.includes(d.id) ? 'selected' : '';
+      return `<span class="tag ${sel}" onclick="togglePick('${m.id}','${d.id}')">${d.name}</span>`;
+    }).join('');
+    return `
+      <div class="member-card">
+        <div class="member-header">
+          <span class="member-name"><span class="member-emoji">${m.emoji}</span>${m.name}</span>
+          <span class="member-del" onclick="removeMember('${m.id}')">✕</span>
+        </div>
+        <div class="member-tags">${tags}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderResults() {
+  const el = document.getElementById('resultContent');
+  if (state.dishes.length === 0) {
+    el.innerHTML = '<div class="empty-state">加菜后这里会显示投票统计</div>';
+    return;
+  }
+  // Count picks per dish
+  const count = {};
+  state.dishes.forEach(d => { count[d.id] = 0; });
+  state.members.forEach(m => {
+    (state.picks[m.id] || []).forEach(did => {
+      if (count[did] !== undefined) count[did]++;
+    });
+  });
+
+  // Sort by count desc
+  const sorted = [...state.dishes].sort((a, b) => count[b.id] - count[a.id]);
+  const maxCount = Math.max(1, ...state.dishes.map(d => count[d.id]));
+
+  el.innerHTML = sorted.map(d => {
+    const c = count[d.id];
+    const pct = Math.round((c / maxCount) * 100);
+    return `
+      <div class="result-bar">
+        <span class="result-name">${d.name}</span>
+        <div class="result-track">
+          <div class="result-fill" style="width:${Math.max(pct, c > 0 ? 15 : 0)}%">${c > 0 ? c : ''}</div>
+        </div>
+        <span class="result-count">${c}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ======== Actions ========
+function resetAll() {
+  if (!confirm('确定要重置所有数据吗？')) return;
+  // Reset picks only, keep dishes and members
+  state.picks = {};
+  state.members.forEach(m => { state.picks[m.id] = []; });
+  save(); render();
+  showToast('已重置所有选择');
+}
+
+function randomPick() {
+  if (state.dishes.length === 0) {
+    showToast('还没有菜，先加几道吧 😅');
+    return;
+  }
+  const dish = state.dishes[Math.floor(Math.random() * state.dishes.length)];
+  showToast(`🎲 随机结果：${dish.name}！`);
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// Init on load
+init();
+</script>
+</body>
+</html>
