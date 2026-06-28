@@ -145,9 +145,15 @@ class FoodSelectHandler(http.server.SimpleHTTPRequestHandler):
             import datetime
             date = datetime.datetime.now().strftime('%Y-%m-%d')
         filepath = os.path.join(SELECTIONS_DIR, f"{date}.json")
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump({'date': date, 'dishes': dishes}, f, ensure_ascii=False, indent=2)
-        self.send_json({'status': 'ok', 'date': date, 'count': len(dishes)})
+        if len(dishes) == 0:
+            # Empty list = delete the saved file
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            self.send_json({'status': 'ok', 'date': date, 'count': 0, 'deleted': True})
+        else:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump({'date': date, 'dishes': dishes}, f, ensure_ascii=False, indent=2)
+            self.send_json({'status': 'ok', 'date': date, 'count': len(dishes)})
     
     def handle_get_selections(self):
         from urllib.parse import urlparse, parse_qs

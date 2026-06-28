@@ -582,8 +582,7 @@ function clearCurrentSelection() {
 async function saveSelections() {
   const currentSel = getCurrentSelection();
   if (currentSel.length === 0) {
-    showToast('还没选菜呢 🤔');
-    return;
+    if (!confirm('确定清空这一天的选择吗？')) return;
   }
   try {
     const resp = await fetch('/api/save_selections', {
@@ -592,10 +591,14 @@ async function saveSelections() {
       body: JSON.stringify({ date: currentDate, dishes: currentSel })
     });
     const data = await resp.json();
-    // Update saved selections
-    savedSelections[currentDate] = [...currentSel];
+    if (currentSel.length === 0) {
+      delete savedSelections[currentDate];
+      showToast('\u{1F5D1}\uFE0F 已清空 ' + currentDate);
+    } else {
+      savedSelections[currentDate] = [...currentSel];
+      showToast('\u2705 ' + currentDate + ' 已保存，共 ' + data.count + ' \u9053\u83DC');
+    }
     delete pendingSelections[currentDate];
-    showToast(`✅ ${currentDate} 已保存，共 ${data.count} 道菜`);
     renderDateNav();
   } catch(e) {
     showToast('保存失败: ' + e.message);
