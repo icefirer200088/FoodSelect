@@ -173,7 +173,26 @@
     align-items: center;
     margin-bottom: 6px;
   }
-  .selected-list {
+  .manual-input {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .manual-input input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+  }
+  .manual-input input:focus {
+    border-color: var(--primary);
+  }
+  .manual-input .btn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
@@ -339,7 +358,7 @@
 <body>
 
 <h1>🍽️ 今天吃啥</h1>
-<p class="subtitle">从 650 道菜里随机抽 50 道，选好每天吃什么</p>
+<p class="subtitle">从 660 道菜里随机抽 50 道，选好每天吃什么</p>
 
 <div class="header-bar">
   <span class="info" id="dishCountInfo">加载中...</span>
@@ -356,6 +375,10 @@
   <div class="header">
     <span class="section-title" id="currentDateTitle">📅 今天 · 已选 <span id="selectedCount">0</span>)</span>
     <button class="btn btn-sm btn-outline" onclick="clearCurrentSelection()">清空</button>
+  </div>
+  <div class="manual-input">
+    <input type="text" id="manualDishInput" placeholder="手输菜名..." onkeydown="if(event.key==='Enter') addManualDish()">
+    <button class="btn btn-primary" onclick="addManualDish()">➕ 添加</button>
   </div>
   <div class="selected-list" id="selectedList">
     <div class="empty-state">点击下面的菜加入选择</div>
@@ -573,6 +596,24 @@ function removeSelected(name) {
 
 function clearCurrentSelection() {
   pendingSelections[currentDate] = [];
+  renderPool();
+  renderSelected();
+  renderDateNav();
+}
+
+function addManualDish() {
+  const input = document.getElementById('manualDishInput');
+  const name = input.value.trim();
+  if (!name) return;
+  const currentSel = getCurrentSelection();
+  if (currentSel.includes(name)) {
+    showToast('已在列表中');
+    return;
+  }
+  currentSel.push(name);
+  pendingSelections[currentDate] = currentSel;
+  input.value = '';
+  input.focus();
   renderPool();
   renderSelected();
   renderDateNav();
