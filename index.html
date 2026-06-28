@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>今天吃啥 🍽️</title>
 <style>
   :root {
@@ -14,59 +14,55 @@
     --text: #1A1A2E;
     --success: #4CAF50;
     --border: #E8D5C4;
+    --selected-bg: #E8F5E9;
+    --tag-bg: #F0F0F0;
+    --date-bg: #FFF3E6;
+    --date-active: var(--primary);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
-    max-width: 480px;
+    max-width: 640px;
     margin: 0 auto;
-    padding: 16px;
-    padding-bottom: 100px;
+    padding: 12px;
+    padding-bottom: 90px;
   }
   h1 {
-    font-size: 28px;
+    font-size: 24px;
     text-align: center;
-    padding: 20px 0 8px;
+    padding: 12px 0 2px;
     color: var(--primary);
   }
   .subtitle {
     text-align: center;
     color: #888;
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-  .section { margin-bottom: 20px; }
-  .section-title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 12px;
     margin-bottom: 10px;
+  }
+  .header-bar {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    margin-bottom: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
   }
-  .add-row {
-    display: flex;
-    gap: 8px;
+  .header-bar .info {
+    font-size: 12px;
+    color: #666;
   }
-  .add-row input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    font-size: 15px;
-    outline: none;
-  }
-  .add-row input:focus { border-color: var(--primary); }
   .btn {
-    padding: 10px 18px;
+    padding: 7px 14px;
     border: none;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
   .btn:active { transform: scale(0.96); }
   .btn-primary { background: var(--primary); color: #fff; }
@@ -74,101 +70,134 @@
   .btn-accent { background: var(--accent); color: #fff; }
   .btn-accent:hover { background: #237090; }
   .btn-outline { background: transparent; border: 2px solid var(--border); }
-  .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
-  .btn-danger { color: #e74c3c; border-color: #e74c3c; }
+  .btn-outline:hover { border-color: var(--primary); }
   .btn-success { background: var(--success); color: #fff; }
-  .dish-list { display: flex; flex-direction: column; gap: 6px; }
-  .dish-item {
+  .btn-success:hover { background: #3d8b40; }
+  .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 7px; }
+
+  /* === Date Navigation === */
+  .date-nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 6px 0 10px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .date-nav::-webkit-scrollbar { display: none; }
+  .date-item {
+    flex: 0 0 auto;
+    min-width: 60px;
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .date-item:active { transform: scale(0.95); }
+  .date-item.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .date-item .dow { font-size: 11px; font-weight: 600; }
+  .date-item .day { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .date-item .mon { font-size: 9px; opacity: 0.7; }
+  .date-item .badge {
+    display: inline-block;
+    background: var(--success);
+    color: #fff;
+    font-size: 10px;
+    border-radius: 10px;
+    padding: 1px 6px;
+    margin-top: 3px;
+  }
+  .date-item.active .badge { background: rgba(255,255,255,0.85); color: var(--primary); }
+  .date-item.today { border-style: dashed; }
+
+  /* === Dish Pool === */
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--card);
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    gap: 8px;
+    gap: 6px;
   }
-  .dish-name { font-size: 16px; font-weight: 500; flex: 1; }
-  .dish-actions { display: flex; gap: 4px; align-items: center; }
-  .empty-state {
-    text-align: center;
-    color: #aaa;
-    padding: 24px;
-    font-size: 14px;
-  }
-  /* Member cards */
-  .member-grid { display: flex; flex-direction: column; gap: 10px; }
-  .member-card {
+  .dish-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 14px;
     background: var(--card);
     border-radius: 12px;
-    padding: 12px 14px;
+    padding: 10px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    min-height: 50px;
   }
-  .member-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-  .member-name { font-weight: 600; font-size: 16px; }
-  .member-emoji { font-size: 20px; margin-right: 6px; }
-  .member-tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
+    gap: 3px;
+    padding: 4px 10px;
+    border-radius: 18px;
+    font-size: 12px;
     cursor: pointer;
     border: 2px solid var(--border);
-    background: var(--card);
+    background: var(--tag-bg);
     transition: all 0.12s;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
+  .tag:hover { border-color: var(--primary); }
   .tag.selected {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
+    background: var(--selected-bg);
+    border-color: var(--success);
+    color: #2e7d32;
   }
-  .tag.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-  .member-del { cursor: pointer; color: #ccc; font-size: 18px; }
-  .member-del:hover { color: #e74c3c; }
 
-  /* Result section */
-  .result-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 4px 0;
-  }
-  .result-name { width: 100px; font-size: 14px; text-align: right; flex-shrink: 0; }
-  .result-track {
-    flex: 1;
-    height: 24px;
-    background: #eee;
+  /* === Selected Section === */
+  .selected-section {
+    background: var(--card);
     border-radius: 12px;
-    overflow: hidden;
-    position: relative;
+    padding: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 12px;
   }
-  .result-fill {
-    height: 100%;
-    border-radius: 12px;
-    background: linear-gradient(90deg, var(--primary), #FF8C42);
-    transition: width 0.3s;
-    min-width: 24px;
+  .selected-section .header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: #fff;
-    font-weight: 600;
+    margin-bottom: 6px;
   }
-  .result-count { font-size: 14px; width: 30px; text-align: left; flex-shrink: 0; }
+  .selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 28px;
+  }
+  .selected-list .tag.selected {
+    background: var(--selected-bg);
+    border-color: var(--success);
+  }
+  .selected-list .tag.selected .remove {
+    margin-left: 3px;
+    color: #999;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .selected-list .tag.selected .remove:hover { color: #e74c3c; }
+  .empty-state {
+    text-align: center;
+    color: #bbb;
+    font-size: 13px;
+    padding: 16px;
+  }
 
+  /* === Bottom Bar === */
   .bottom-bar {
     position: fixed;
     bottom: 0;
@@ -176,16 +205,16 @@
     right: 0;
     background: var(--card);
     border-top: 1px solid var(--border);
-    padding: 10px 16px;
+    padding: 8px 12px;
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
-    max-width: 480px;
+    max-width: 640px;
     margin: 0 auto;
   }
-  .bottom-bar .btn { flex: 1; max-width: 200px; }
+  .bottom-bar .btn { flex: 1; max-width: 160px; }
 
-  /* Modal */
+  /* === Modal === */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -194,87 +223,173 @@
     align-items: center;
     justify-content: center;
     z-index: 100;
+    padding: 12px;
   }
   .modal-overlay.hidden { display: none; }
   .modal-content {
     background: var(--card);
     border-radius: 16px;
-    padding: 24px;
-    max-width: 360px;
-    width: 90%;
+    padding: 16px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15);
   }
-  .modal-content h3 { margin-bottom: 16px; font-size: 18px; }
-  .modal-content input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    font-size: 15px;
-    margin-bottom: 12px;
-    outline: none;
+  .modal-content h3 { margin-bottom: 8px; font-size: 17px; }
+  .modal-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 100px;
   }
-  .modal-content input:focus { border-color: var(--primary); }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
 
+  /* Day card in overview */
+  .day-card {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .day-card:hover { background: #f0f0f0; }
+  .day-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .day-card .day-title { font-weight: 600; font-size: 14px; }
+  .day-card .day-subtitle { font-size: 11px; color: #888; }
+  .day-card .dishes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .day-card .dishes .tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    pointer-events: none;
+  }
+  .day-card .edit-btn {
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 2px 6px;
+  }
+  .day-card.empty { opacity: 0.6; }
+
+  /* === Toast === */
   .toast {
     position: fixed;
-    bottom: 80px;
+    bottom: 60px;
     left: 50%;
     transform: translateX(-50%);
     background: #333;
     color: #fff;
-    padding: 10px 24px;
+    padding: 8px 20px;
     border-radius: 24px;
-    font-size: 14px;
+    font-size: 13px;
     z-index: 200;
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
+    white-space: nowrap;
   }
   .toast.show { opacity: 1; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 30px;
+    color: #aaa;
+    font-size: 14px;
+  }
+  .loading .spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+    font-size: 28px;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  /* Menu editor textarea */
+  .modal-content textarea {
+    flex: 1;
+    min-height: 200px;
+    padding: 8px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: monospace;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+  }
+  .modal-content textarea:focus { border-color: var(--primary); }
 </style>
 </head>
 <body>
 
 <h1>🍽️ 今天吃啥</h1>
-<p class="subtitle">每人点自己喜欢的菜，投票决定晚饭</p>
+<p class="subtitle">从 650 道菜里随机抽 50 道，选好每天吃什么</p>
 
-<div class="section">
-  <div class="section-title">📋 今日菜单</div>
-  <div class="add-row">
-    <input type="text" id="dishInput" placeholder="输入菜名，如 红烧排骨" maxlength="20">
-    <button class="btn btn-primary" onclick="addDish()">➕ 添加</button>
+<div class="header-bar">
+  <span class="info" id="dishCountInfo">加载中...</span>
+  <div>
+    <button class="btn btn-sm btn-outline" onclick="refreshDishes()">🔄 换一批</button>
+    <button class="btn btn-sm btn-outline" onclick="openMenuEditor()">📝 编辑菜单</button>
   </div>
-  <div class="dish-list" id="dishList" style="margin-top:10px"></div>
 </div>
 
-<div class="section">
-  <div class="section-title">
-    👨‍👩‍👧‍👦 家人点菜
-    <button class="btn btn-sm btn-outline" onclick="showAddMember()">➕ 家人</button>
+<!-- Date Navigation -->
+<div class="date-nav" id="dateNav"></div>
+
+<div class="selected-section">
+  <div class="header">
+    <span class="section-title" id="currentDateTitle">📅 今天 · 已选 <span id="selectedCount">0</span>)</span>
+    <button class="btn btn-sm btn-outline" onclick="clearCurrentSelection()">清空</button>
   </div>
-  <div class="member-grid" id="memberGrid"></div>
+  <div class="selected-list" id="selectedList">
+    <div class="empty-state">点击下面的菜加入选择</div>
+  </div>
 </div>
 
-<div class="section" id="resultSection">
-  <div class="section-title">📊 统计</div>
-  <div id="resultContent"></div>
+<div class="dish-pool" id="dishPool">
+  <div class="loading"><div class="spinner">🍳</div><br>加载菜谱中...</div>
 </div>
 
 <div class="bottom-bar">
-  <button class="btn btn-outline btn-danger" onclick="resetAll()">🔄 重置</button>
-  <button class="btn btn-success" onclick="randomPick()">🎲 随机定菜</button>
+  <button class="btn btn-outline" onclick="openOverview()">📋 总览</button>
+  <button class="btn btn-success" onclick="saveSelections()">💾 保存本日</button>
 </div>
 
-<div class="modal-overlay hidden" id="memberModal">
+<!-- Overview Modal -->
+<div class="modal-overlay hidden" id="overviewModal">
   <div class="modal-content">
-    <h3>添加家人</h3>
-    <input type="text" id="memberNameInput" placeholder="姓名" maxlength="10">
-    <input type="text" id="memberEmojiInput" placeholder="表情（如 👨）" maxlength="2">
+    <h3>📋 所有日期的选择</h3>
+    <div class="modal-scroll" id="overviewContent"></div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="hideModal()">取消</button>
-      <button class="btn btn-primary" onclick="confirmAddMember()">添加</button>
+      <button class="btn btn-outline" onclick="hideModal('overviewModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Menu Editor Modal -->
+<div class="modal-overlay hidden" id="menuEditorModal">
+  <div class="modal-content">
+    <h3>📝 编辑菜单</h3>
+    <textarea id="menuEditor"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="hideModal('menuEditorModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveMenu()">💾 保存</button>
     </div>
   </div>
 </div>
@@ -283,215 +398,332 @@
 
 <script>
 // ======== State ========
-let state = {
-  dishes: [],
-  members: [],
-  picks: {}   // memberId -> dish id set
-};
-
-const DEFAULT_DISHES = ['红烧排骨', '清蒸鲈鱼', '番茄炒蛋', '蒜蓉西兰花', '可乐鸡翅', '酸辣土豆丝'];
-const DEFAULT_MEMBERS = [
-  { id: 'm1', name: '堂成', emoji: '👨' },
-  { id: 'm2', name: '莉莉', emoji: '👩' },
-  { id: 'm3', name: '开心', emoji: '👦' },
-  { id: 'm4', name: '开朗', emoji: '👶' },
-];
+const WEEKDAYS = ['日','一','二','三','四','五','六'];
+let allDishes = [];            // current random 50
+let pendingSelections = {};    // { "YYYY-MM-DD": ["dish1", "dish2", ...] }
+let savedSelections = {};      // loaded from server { "YYYY-MM-DD": ["dish1", ...] }
+let currentDate = '';          // YYYY-MM-DD being viewed
+let dateList = [];             // [today, today+1, ..., today+6]
 
 // ======== Init ========
-function init() {
-  const saved = localStorage.getItem('foodselect');
-  if (saved) {
-    try { state = JSON.parse(saved); } catch(e) { resetToDefault(); }
-  } else {
-    resetToDefault();
+async function init() {
+  buildDateList();
+  await loadAllSavedSelections();
+  currentDate = dateList[0].date; // today
+  await refreshDishes();
+  renderDateNav();
+}
+
+function buildDateList() {
+  const today = new Date();
+  dateList = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    dateList.push({
+      date: `${y}-${m}-${day}`,
+      dow: WEEKDAYS[d.getDay()],
+      day: d.getDate(),
+      mon: m + '/' + y,
+      isToday: i === 0
+    });
   }
-  render();
 }
 
-function resetToDefault() {
-  state = {
-    dishes: DEFAULT_DISHES.map((d, i) => ({ id: 'd' + i, name: d })),
-    members: DEFAULT_MEMBERS,
-    picks: {},
-  };
-  // Init picks for all members
-  state.members.forEach(m => {
-    if (!state.picks[m.id]) state.picks[m.id] = [];
-  });
-  save();
+async function loadAllSavedSelections() {
+  try {
+    const resp = await fetch('/api/selections');
+    const data = await resp.json();
+    if (data.selections) {
+      savedSelections = {};
+      data.selections.forEach(s => {
+        if (s.dishes && s.dishes.length > 0) {
+          savedSelections[s.date] = s.dishes;
+        }
+      });
+    }
+  } catch(e) {
+    console.warn('加载已保存选择失败', e);
+  }
 }
 
-function save() {
-  localStorage.setItem('foodselect', JSON.stringify(state));
+async function refreshDishes() {
+  const pool = document.getElementById('dishPool');
+  pool.innerHTML = '<div class="loading"><div class="spinner">🍳</div><br>摇菜中...</div>';
+
+  try {
+    const resp = await fetch('/api/random?count=50');
+    const data = await resp.json();
+    allDishes = data.dishes;
+    const familyCount = data.family_count || 0;
+    const famNote = familyCount > 0 ? `（含 ${familyCount} 道家庭菜）` : '';
+    document.getElementById('dishCountInfo').textContent =
+      `今日 ${allDishes.length} 道${famNote}· 菜谱共 ${data.total} 道`;
+    renderDateNav();
+    renderPool();
+    renderSelected();
+  } catch(e) {
+    pool.innerHTML = '<div class="empty-state">❌ 加载失败，请检查服务是否运行</div>';
+  }
 }
 
-// ======== Dish Management ========
-function addDish() {
-  const input = document.getElementById('dishInput');
-  const name = input.value.trim();
-  if (!name) { showToast('请输入菜名'); return; }
-  const id = 'd' + Date.now();
-  state.dishes.push({ id, name });
-  input.value = '';
-  save(); render();
+// ======== Date Navigation ========
+function renderDateNav() {
+  const nav = document.getElementById('dateNav');
+  nav.innerHTML = dateList.map(d => {
+    const active = d.date === currentDate ? 'active' : '';
+    const today = d.isToday ? 'today' : '';
+    const saved = savedSelections[d.date];
+    const count = saved ? saved.length : 0;
+    const pending = pendingSelections[d.date];
+    const pCount = pending ? pending.length : 0;
+    const badge = (pCount > 0 || count > 0) ? `<div class="badge">${pCount > 0 ? pCount : count}</div>` : '';
+    return `<div class="date-item ${active} ${today}" onclick="switchDate('${d.date}')">
+      <div class="dow">${d.dow}</div>
+      <div class="day">${d.day}</div>
+      <div class="mon">${d.mon.split('/')[0]}</div>
+      ${badge}
+    </div>`;
+  }).join('');
+  // scroll active into view
+  const activeEl = nav.querySelector('.date-item.active');
+  if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 }
 
-function removeDish(id) {
-  state.dishes = state.dishes.filter(d => d.id !== id);
-  // Remove from picks
-  Object.keys(state.picks).forEach(mid => {
-    state.picks[mid] = state.picks[mid].filter(did => did !== id);
-  });
-  save(); render();
+function switchDate(date) {
+  // save current pending changes before switching
+  const currentSel = getCurrentSelection();
+  pendingSelections[currentDate] = currentSel;
+
+  currentDate = date;
+  const sel = getCurrentSelection();
+  if (sel.length > 0) {
+    // re-randomize? Keep current pool but filter differently?
+    // Better to keep same pool, just show different selections
+  }
+  renderDateNav();
+  renderSelected();
 }
 
-// ======== Member Management ========
-function showAddMember() {
-  document.getElementById('memberModal').classList.remove('hidden');
-  document.getElementById('memberNameInput').value = '';
-  document.getElementById('memberEmojiInput').value = '';
-  document.getElementById('memberNameInput').focus();
-}
-
-function hideModal() {
-  document.getElementById('memberModal').classList.add('hidden');
-}
-
-function confirmAddMember() {
-  const name = document.getElementById('memberNameInput').value.trim();
-  const emoji = document.getElementById('memberEmojiInput').value.trim() || '👤';
-  if (!name) { showToast('请输入姓名'); return; }
-  const id = 'm' + Date.now();
-  state.members.push({ id, name, emoji });
-  state.picks[id] = [];
-  hideModal();
-  save(); render();
-}
-
-function removeMember(id) {
-  state.members = state.members.filter(m => m.id !== id);
-  delete state.picks[id];
-  save(); render();
-}
-
-// ======== Voting ========
-function togglePick(memberId, dishId) {
-  if (!state.picks[memberId]) state.picks[memberId] = [];
-  const picks = state.picks[memberId];
-  const idx = picks.indexOf(dishId);
-  if (idx >= 0) picks.splice(idx, 1);
-  else picks.push(dishId);
-  save(); render();
+function getCurrentSelection() {
+  const sel = pendingSelections[currentDate];
+  if (sel) return sel;
+  if (savedSelections[currentDate]) return [...savedSelections[currentDate]];
+  return [];
 }
 
 // ======== Render ========
-function render() {
-  renderDishes();
-  renderMembers();
-  renderResults();
-}
-
-function renderDishes() {
-  const el = document.getElementById('dishList');
-  if (state.dishes.length === 0) {
-    el.innerHTML = '<div class="empty-state">🍳 还没加菜，先添加几道菜吧</div>';
+function renderPool() {
+  const pool = document.getElementById('dishPool');
+  if (allDishes.length === 0) {
+    pool.innerHTML = '<div class="empty-state">没有菜，先去编辑菜单加点菜</div>';
     return;
   }
-  el.innerHTML = state.dishes.map(d => `
-    <div class="dish-item">
-      <span class="dish-name">${d.name}</span>
-      <div class="dish-actions">
-        <button class="btn btn-sm btn-outline btn-danger" onclick="removeDish('${d.id}')">✕</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderMembers() {
-  const el = document.getElementById('memberGrid');
-  if (state.members.length === 0) {
-    el.innerHTML = '<div class="empty-state">👥 还没添加家人，点上方"家人"添加</div>';
-    return;
-  }
-  el.innerHTML = state.members.map(m => {
-    const memberPicks = state.picks[m.id] || [];
-    const tags = state.dishes.map(d => {
-      const sel = memberPicks.includes(d.id) ? 'selected' : '';
-      return `<span class="tag ${sel}" onclick="togglePick('${m.id}','${d.id}')">${d.name}</span>`;
-    }).join('');
-    return `
-      <div class="member-card">
-        <div class="member-header">
-          <span class="member-name"><span class="member-emoji">${m.emoji}</span>${m.name}</span>
-          <span class="member-del" onclick="removeMember('${m.id}')">✕</span>
-        </div>
-        <div class="member-tags">${tags}</div>
-      </div>
-    `;
+  const currentSel = getCurrentSelection();
+  pool.innerHTML = allDishes.map(name => {
+    const sel = currentSel.includes(name) ? 'selected' : '';
+    return `<span class="tag ${sel}" onclick="toggleDish('${escapeStr(name)}')">${escapeHtml(name)}</span>`;
   }).join('');
 }
 
-function renderResults() {
-  const el = document.getElementById('resultContent');
-  if (state.dishes.length === 0) {
-    el.innerHTML = '<div class="empty-state">加菜后这里会显示投票统计</div>';
+function renderSelected() {
+  const list = document.getElementById('selectedList');
+  const count = document.getElementById('selectedCount');
+  const title = document.getElementById('currentDateTitle');
+
+  const currentSel = getCurrentSelection();
+  const dateInfo = dateList.find(d => d.date === currentDate);
+  const label = dateInfo ? `${dateInfo.dow} ${dateInfo.day}日` : currentDate;
+  count.textContent = currentSel.length;
+  title.innerHTML = `📅 ${label} · 已选 <span id="selectedCount">${currentSel.length}</span>)`;
+
+  if (currentSel.length === 0) {
+    list.innerHTML = '<div class="empty-state">点击下面的菜加入选择</div>';
     return;
   }
-  // Count picks per dish
-  const count = {};
-  state.dishes.forEach(d => { count[d.id] = 0; });
-  state.members.forEach(m => {
-    (state.picks[m.id] || []).forEach(did => {
-      if (count[did] !== undefined) count[did]++;
+  list.innerHTML = currentSel.map(name =>
+    `<span class="tag selected" onclick="removeSelected('${escapeStr(name)}')">
+      ${escapeHtml(name)}<span class="remove">✕</span>
+    </span>`
+  ).join('');
+}
+
+function toggleDish(name) {
+  const currentSel = getCurrentSelection();
+  const idx = currentSel.indexOf(name);
+  if (idx >= 0) {
+    currentSel.splice(idx, 1);
+  } else {
+    currentSel.push(name);
+  }
+  pendingSelections[currentDate] = currentSel;
+  renderPool();
+  renderSelected();
+  renderDateNav();
+}
+
+function removeSelected(name) {
+  const currentSel = getCurrentSelection();
+  const idx = currentSel.indexOf(name);
+  if (idx >= 0) currentSel.splice(idx, 1);
+  pendingSelections[currentDate] = currentSel;
+  renderPool();
+  renderSelected();
+  renderDateNav();
+}
+
+function clearCurrentSelection() {
+  pendingSelections[currentDate] = [];
+  renderPool();
+  renderSelected();
+  renderDateNav();
+}
+
+// ======== Save ========
+async function saveSelections() {
+  const currentSel = getCurrentSelection();
+  if (currentSel.length === 0) {
+    showToast('还没选菜呢 🤔');
+    return;
+  }
+  try {
+    const resp = await fetch('/api/save_selections', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ date: currentDate, dishes: currentSel })
     });
+    const data = await resp.json();
+    // Update saved selections
+    savedSelections[currentDate] = [...currentSel];
+    delete pendingSelections[currentDate];
+    showToast(`✅ ${currentDate} 已保存，共 ${data.count} 道菜`);
+    renderDateNav();
+  } catch(e) {
+    showToast('保存失败: ' + e.message);
+  }
+}
+
+// ======== Overview ========
+async function openOverview() {
+  const modal = document.getElementById('overviewModal');
+  modal.classList.remove('hidden');
+  const content = document.getElementById('overviewContent');
+
+  // Reload saved selections from server
+  await loadAllSavedSelections();
+
+  // Merge pending into saved for display
+  const merged = {};
+  Object.keys(savedSelections).forEach(k => { merged[k] = savedSelections[k]; });
+  Object.keys(pendingSelections).forEach(k => {
+    if (pendingSelections[k] && pendingSelections[k].length > 0) {
+      merged[k] = pendingSelections[k];
+    }
   });
 
-  // Sort by count desc
-  const sorted = [...state.dishes].sort((a, b) => count[b.id] - count[a.id]);
-  const maxCount = Math.max(1, ...state.dishes.map(d => count[d.id]));
+  const dates = Object.keys(merged).sort();
+  if (dates.length === 0) {
+    content.innerHTML = '<div class="empty-state">还没有选择任何日期的菜</div>';
+    return;
+  }
 
-  el.innerHTML = sorted.map(d => {
-    const c = count[d.id];
-    const pct = Math.round((c / maxCount) * 100);
-    return `
-      <div class="result-bar">
-        <span class="result-name">${d.name}</span>
-        <div class="result-track">
-          <div class="result-fill" style="width:${Math.max(pct, c > 0 ? 15 : 0)}%">${c > 0 ? c : ''}</div>
+  content.innerHTML = dates.map(date => {
+    const dishes = merged[date];
+    const dateInfo = dateList.find(d => d.date === date);
+    const label = dateInfo ? `${dateInfo.dow} ${dateInfo.day}日` : date;
+    const isPending = pendingSelections[date] && pendingSelections[date].length > 0;
+    const status = isPending ? '🟡 未保存' : '🟢 已保存';
+    return `<div class="day-card" onclick="switchToDate('${date}')">
+      <div class="head">
+        <div>
+          <span class="day-title">${label}</span>
+          <span class="day-subtitle"> · ${date}</span>
         </div>
-        <span class="result-count">${c}</span>
+        <div>
+          <span style="font-size:11px;color:#888;margin-right:6px">${status}</span>
+          <span style="font-size:11px;color:var(--accent);cursor:pointer">✏️ 编辑</span>
+        </div>
       </div>
-    `;
+      <div class="dishes">
+        ${dishes.map(n => `<span class="tag selected">${escapeHtml(n)}</span>`).join('')}
+      </div>
+    </div>`;
   }).join('');
 }
 
-// ======== Actions ========
-function resetAll() {
-  if (!confirm('确定要重置所有数据吗？')) return;
-  // Reset picks only, keep dishes and members
-  state.picks = {};
-  state.members.forEach(m => { state.picks[m.id] = []; });
-  save(); render();
-  showToast('已重置所有选择');
+function switchToDate(date) {
+  // Save current pending
+  const currentSel = getCurrentSelection();
+  pendingSelections[currentDate] = currentSel;
+
+  currentDate = date;
+  hideModal('overviewModal');
+  renderDateNav();
+  renderSelected();
+  // scroll date into view
+  const nav = document.getElementById('dateNav');
+  const el = nav.querySelector(`.date-item[onclick*="'${date}'"]`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 }
 
-function randomPick() {
-  if (state.dishes.length === 0) {
-    showToast('还没有菜，先加几道吧 😅');
-    return;
+// ======== Menu Editor ========
+async function openMenuEditor() {
+  const modal = document.getElementById('menuEditorModal');
+  modal.classList.remove('hidden');
+  const textarea = document.getElementById('menuEditor');
+  textarea.value = '加载中...';
+  try {
+    const resp = await fetch('/api/menu');
+    const text = await resp.text();
+    textarea.value = text;
+  } catch(e) {
+    textarea.value = '// 加载失败';
   }
-  const dish = state.dishes[Math.floor(Math.random() * state.dishes.length)];
-  showToast(`🎲 随机结果：${dish.name}！`);
+}
+
+function hideModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+async function saveMenu() {
+  const content = document.getElementById('menuEditor').value;
+  try {
+    const resp = await fetch('/api/menu', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({content})
+    });
+    const data = await resp.json();
+    showToast(data.message || '已保存');
+    hideModal('menuEditorModal');
+    await refreshDishes();
+  } catch(e) {
+    showToast('保存失败: ' + e.message);
+  }
+}
+
+// ======== Utils ========
+function escapeStr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+}
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
 }
 
 function showToast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
+  clearTimeout(el._hide);
+  el._hide = setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// Init on load
+// ---- init ----
 init();
 </script>
 </body>
