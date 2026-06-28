@@ -499,12 +499,8 @@ function switchDate(date) {
   pendingSelections[currentDate] = currentSel;
 
   currentDate = date;
-  const sel = getCurrentSelection();
-  if (sel.length > 0) {
-    // re-randomize? Keep current pool but filter differently?
-    // Better to keep same pool, just show different selections
-  }
   renderDateNav();
+  renderPool();
   renderSelected();
 }
 
