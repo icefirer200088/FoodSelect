@@ -634,7 +634,11 @@ async function saveSelections() {
       showToast('\u{1F5D1}\uFE0F 已清空 ' + currentDate);
     } else {
       savedSelections[currentDate] = [...currentSel];
-      showToast('\u2705 ' + currentDate + ' 已保存，共 ' + data.count + ' \u9053\u83DC');
+      var _msg = '✅ ' + currentDate + ' 已保存，共 ' + data.count + ' 道菜';
+      if (data.added_to_menu && data.added_to_menu.length > 0) {
+        _msg += ' ⭐ 新增' + data.added_to_menu.length + '道到菜单';
+      }
+      showToast(_msg);
     }
     delete pendingSelections[currentDate];
     renderDateNav();

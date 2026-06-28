@@ -74,6 +74,73 @@ def get_all_dishes():
             all_dishes.extend(dishes)
     return all_dishes
 
+
+def add_dishes_to_menu(new_dishes):
+    """Add new dishes to the 家庭菜 section of 菜单.md. Returns list of actually added dishes."""
+    if not new_dishes:
+        return []
+    with open(MENU_FILE, 'r', encoding='utf-8') as f:
+        text = f.read()
+    
+    # Find the 家庭菜 section
+    family_marker = '## 家庭菜'
+    idx = text.find(family_marker)
+    if idx < 0:
+        return []  # No family section found
+    
+    # Find end of family section (next ## or EOF)
+    end_idx = text.find('\n## ', idx + len(family_marker))
+    if end_idx < 0:
+        end_idx = len(text)
+    
+    family_block = text[idx:end_idx]
+    family_lines = family_block.split('\n')
+    
+    # Find the placeholder line and actual dishes
+    actual = []
+    placeholder_line = None
+    for i, line in enumerate(family_lines):
+        stripped = line.strip()
+        if stripped.startswith('- '):
+            dish = stripped[2:].strip()
+            if dish and not dish.startswith('（') and not dish.startswith('['):
+                actual.append(dish)
+        elif stripped == '（留空，用户自填）':
+            placeholder_line = i
+    
+    # Filter out dishes already in family section
+    to_add = [d for d in new_dishes if d not in actual]
+    if not to_add:
+        return []
+    
+    # Add to family block
+    new_lines = []
+    for d in to_add:
+        new_lines.append(f'- {d}')
+    
+    # If placeholder exists, replace it with first new dish
+    added_lines = list(new_lines)
+    if placeholder_line is not None:
+        family_lines[placeholder_line] = added_lines.pop(0)
+    
+    # Append remaining
+    for line in added_lines:
+        family_lines.append(line)
+    
+    # Update the header count
+    header = family_lines[0]
+    final_dish_count = len(actual) + len(to_add)
+    import re as re2
+    header = re2.sub(r'\((\d+)道\)', f'({final_dish_count}道)', header)
+    family_lines[0] = header
+    
+    new_family_block = '\n'.join(family_lines)
+    new_text = text[:idx] + new_family_block + text[end_idx:]
+    
+    with open(MENU_FILE, 'w', encoding='utf-8') as f:
+        f.write(new_text)
+    
+    return to_add
 class FoodSelectHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIR, **kwargs)
@@ -153,7 +220,14 @@ class FoodSelectHandler(http.server.SimpleHTTPRequestHandler):
         else:
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump({'date': date, 'dishes': dishes}, f, ensure_ascii=False, indent=2)
-            self.send_json({'status': 'ok', 'date': date, 'count': len(dishes)})
+            # Auto-add hand-typed dishes to the menu
+            all_menu = set(get_all_dishes())
+            new_dishes = [d for d in dishes if d not in all_menu]
+            if new_dishes:
+                added = add_dishes_to_menu(new_dishes)
+            else:
+                added = []
+            self.send_json({'status': 'ok', 'date': date, 'count': len(dishes), 'added_to_menu': added})
     
     def handle_get_selections(self):
         from urllib.parse import urlparse, parse_qs
