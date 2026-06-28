@@ -581,9 +581,6 @@ function clearCurrentSelection() {
 // ======== Save ========
 async function saveSelections() {
   const currentSel = getCurrentSelection();
-  if (currentSel.length === 0) {
-    if (!confirm('确定清空这一天的选择吗？')) return;
-  }
   try {
     const resp = await fetch('/api/save_selections', {
       method: 'POST',
